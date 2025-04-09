@@ -27,9 +27,8 @@ dino_velocity_y = 0
 is_jumping = False
 
 # Game state
-score = 0
 bullets = 3
-stamina = 0
+stamina = 100
 enemies = []
 fruits = []
 bullets_fired = []
@@ -37,6 +36,8 @@ level = 1
 start_time = pygame.time.get_ticks()
 LEVEL_DURATION = 30000
 spawn_timer = 0
+bullet_cooldown = False
+bullet_cooldown_time = 0
 
 
 def draw_text(text, x, y):
@@ -49,7 +50,7 @@ def spawn_obstacle():
     if kind == "tree":
         rect = pygame.Rect(WIDTH, 220, 30, 40)
     else:
-        bird_y = random.randint(120, 180)
+        bird_y = random.choice([160, 200])
         rect = pygame.Rect(WIDTH, bird_y, 30, 30)
     enemies.append({"rect": rect, "type": kind})
 
@@ -60,14 +61,14 @@ def spawn_fruit():
 
 
 def handle_collisions():
-    global score, stamina
+    global stamina
     for enemy in enemies:
         if dino.colliderect(enemy["rect"]):
             game_over()
 
     for fruit in fruits[:]:
         if dino.colliderect(fruit):
-            stamina += 10
+            stamina = min(100, stamina + 20)
             fruits.remove(fruit)
 
     for bullet in bullets_fired[:]:
@@ -80,7 +81,19 @@ def handle_collisions():
 
 
 def game_over():
-    print("Game Over! Final Score:", int(score))
+    screen.fill(BG_COLOR)
+    draw_text("Game Over!", 330, 120)
+    pygame.display.flip()
+    pygame.time.wait(2000)
+    pygame.quit()
+    sys.exit()
+
+
+def win_game():
+    screen.fill(BG_COLOR)
+    draw_text("You Win!", 350, 120)
+    pygame.display.flip()
+    pygame.time.wait(3000)
     pygame.quit()
     sys.exit()
 
@@ -104,7 +117,7 @@ def level_up():
                     bullets = 3
                     choosing = False
                 elif event.key == pygame.K_s:
-                    stamina += 20
+                    stamina = min(100, stamina + 30)
                     choosing = False
 
 # Main loop
@@ -118,9 +131,19 @@ while running:
     current_level = min(3, elapsed // LEVEL_DURATION + 1)
     if current_level != level:
         level = current_level
-        level_up()
+        if level <= 3:
+            level_up()
+
+    if level > 3:
+        win_game()
 
     game_speed = 5 + level + (elapsed / 15000)
+
+    # Decrease stamina over time
+    if pygame.time.get_ticks() % 1000 < 20:
+        stamina -= 1
+        if stamina <= 0:
+            game_over()
 
     # Events
     for event in pygame.event.get():
@@ -132,10 +155,15 @@ while running:
         dino_velocity_y = jump_velocity
         is_jumping = True
 
-    if keys[pygame.K_RIGHT] and bullets > 0:
+    if keys[pygame.K_RIGHT] and bullets > 0 and not bullet_cooldown:
         bullet = pygame.Rect(dino.right, dino.centery - 5, 15, 10)
         bullets_fired.append(bullet)
         bullets -= 1
+        bullet_cooldown = True
+        bullet_cooldown_time = pygame.time.get_ticks()
+
+    if bullet_cooldown and pygame.time.get_ticks() - bullet_cooldown_time > 300:
+        bullet_cooldown = False
 
     # Jump physics
     if is_jumping:
@@ -185,11 +213,9 @@ while running:
         pygame.draw.rect(screen, BULLET_COLOR, bullet)
 
     # UI
-    score += 0.5
-    draw_text(f"Score: {int(score)}", 20, 20)
-    draw_text(f"Level: {level}", 20, 50)
-    draw_text(f"Bullets: {bullets}", 20, 80)
-    draw_text(f"Stamina: {stamina}", 20, 110)
+    draw_text(f"Level: {level}", 20, 20)
+    draw_text(f"Bullets: {bullets}", 20, 50)
+    draw_text(f"Stamina: {stamina}", 20, 80)
 
     pygame.display.flip()
 
