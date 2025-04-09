@@ -1,129 +1,196 @@
+import pygame
+import random
+import sys
 
-#Starting up Pygame
-import pygame, sys
-
+# Initialize Pygame
 pygame.init()
+WIDTH, HEIGHT = 800, 300
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Dino Sprint: Elemental Run")
+clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 36)
+
+# Colors
+WHITE = (255, 255, 255)
+DINO_COLOR = (0, 200, 0)
+TREE_COLOR = (139, 69, 19)
+BIRD_COLOR = (50, 100, 255)
+FRUIT_COLOR = (255, 100, 0)
+BULLET_COLOR = (255, 255, 0)
+BG_COLOR = (180, 240, 255)
+
+# Dino setup
+dino = pygame.Rect(50, 220, 40, 40)
+gravity = 1.2
+jump_velocity = -16
+dino_velocity_y = 0
+is_jumping = False
+
+# Game state
+score = 0
+bullets = 3
+stamina = 0
+enemies = []
+fruits = []
+bullets_fired = []
+level = 1
+start_time = pygame.time.get_ticks()
+LEVEL_DURATION = 30000
+spawn_timer = 0
 
 
-
-#Playing background music
-#pygame.mixer.music.load("bgm.mp3")
-#pygame.mixer.music.set_volume(0.5)  # set volume to 50%
-#pygame.mixer.music.play(-1)  
-
-
-# Creating the game window
-width, height = 800, 600
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("College Decision Game")
-
-# Font
-font = pygame.font.SysFont("Arial", 24)
-
-# Writing text on the screen，x = how far from the left the text will start  ,y = how far from the top the text will start
 def draw_text(text, x, y):
-    rendered = font.render(text, True, (0, 0, 0))
-    screen.blit(rendered, (x, y))
-
-# List of scenarios (questions + choices)
-scenarios = [
-    {
-        "question": "You have an exam tomorrow. What do you do?",
-        "choices": [
-            {"text": "Study hard", "grades": +10, "social": -5},
-            {"text": "Go to a party", "grades": -5, "social": +10}
-        ]
-    },
-    {
-        "question": "You’re invited to join a club. Do you join?",
-        "choices": [
-            {"text": "Yes, join the club", "grades": 0, "social": +10},
-            {"text": "No, focus on academics", "grades": +5, "social": 0}
-        ]
-    },
-    {
-        "question": "Your friend asks for help with homework. What do you do?",
-        "choices": [
-            {"text": "Help them", "grades": +5, "social": +5},
-            {"text": "Say no, you're too busy", "grades": +10, "social": -5}
-        ]
-    }
-]
-
-# Player’s current scores
-player_state = {
-    "grades": 50,
-    "social": 50
-}
+    label = font.render(text, True, WHITE)
+    screen.blit(label, (x, y))
 
 
-#Game state trackers
-current_scenario_index = 0
-game_started = False
+def spawn_obstacle():
+    kind = random.choice(["tree", "bird"])
+    if kind == "tree":
+        rect = pygame.Rect(WIDTH, 220, 30, 40)
+    else:
+        bird_y = random.randint(120, 180)
+        rect = pygame.Rect(WIDTH, bird_y, 30, 30)
+    enemies.append({"rect": rect, "type": kind})
 
 
+def spawn_fruit():
+    fruit_rect = pygame.Rect(WIDTH, random.randint(180, 240), 20, 20)
+    fruits.append(fruit_rect)
 
 
-# Show one scenario and its choices
-def draw_scenario(scenario):
-    draw_text(scenario["question"], 50, 100)
-    draw_text("1. " + scenario["choices"][0]["text"], 70, 160)
-    draw_text("2. " + scenario["choices"][1]["text"], 70, 200)
+def handle_collisions():
+    global score, stamina
+    for enemy in enemies:
+        if dino.colliderect(enemy["rect"]):
+            game_over()
+
+    for fruit in fruits[:]:
+        if dino.colliderect(fruit):
+            stamina += 10
+            fruits.remove(fruit)
+
+    for bullet in bullets_fired[:]:
+        for enemy in enemies[:]:
+            if bullet.colliderect(enemy["rect"]):
+                enemies.remove(enemy)
+                if bullet in bullets_fired:
+                    bullets_fired.remove(bullet)
+                break
 
 
-
-# Show current players scores
-def draw_scores():
-    draw_text(f"Grades: {player_state['grades']}", 600, 20)
-    draw_text(f"Social: {player_state['social']}", 600, 50)
-
+def game_over():
+    print("Game Over! Final Score:", int(score))
+    pygame.quit()
+    sys.exit()
 
 
-# Handle what happens when the player chooses
-def handle_choice(choice_index):
-    global current_scenario_index
-    if current_scenario_index < len(scenarios):
-        scenario = scenarios[current_scenario_index]
-        choice = scenario["choices"][choice_index]
+def level_up():
+    global bullets, stamina
+    choosing = True
+    while choosing:
+        screen.fill(BG_COLOR)
+        draw_text("Level Up! Choose a reward:", 250, 100)
+        draw_text("Press B to Refill Bullets", 270, 140)
+        draw_text("Press S to Boost Stamina", 270, 180)
+        pygame.display.flip()
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_b:
+                    bullets = 3
+                    choosing = False
+                elif event.key == pygame.K_s:
+                    stamina += 20
+                    choosing = False
 
-
-        # Update player stats
-        player_state["grades"] += choice["grades"]
-        player_state["social"] += choice["social"]
-
-        # Move to next scenario
-        current_scenario_index += 1
-
-# Main game loop
+# Main loop
 running = True
 while running:
+    dt = clock.tick(60)
+    elapsed = pygame.time.get_ticks() - start_time
+    screen.fill(BG_COLOR)
+
+    # LEVEL PROGRESSION
+    current_level = min(3, elapsed // LEVEL_DURATION + 1)
+    if current_level != level:
+        level = current_level
+        level_up()
+
+    game_speed = 5 + level + (elapsed / 15000)
+
+    # Events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        elif event.type == pygame.KEYDOWN:
-            if not game_started and event.key == pygame.K_SPACE:
-                game_started = True
-            elif game_started:
-                if event.key == pygame.K_1:
-                    handle_choice(0)
-                elif event.key == pygame.K_2:
-                    handle_choice(1)
+            running = False
 
-    # Background
-    screen.fill((255, 255, 255))
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP] and not is_jumping:
+        dino_velocity_y = jump_velocity
+        is_jumping = True
 
-    if not game_started:
-        draw_text("College Decision Game!", 280, 200)
-        draw_text("Press SPACE to start", 300, 260)
-    else:
-        if current_scenario_index < len(scenarios):
-            draw_scenario(scenarios[current_scenario_index])
-            draw_scores()
+    if keys[pygame.K_RIGHT] and bullets > 0:
+        bullet = pygame.Rect(dino.right, dino.centery - 5, 15, 10)
+        bullets_fired.append(bullet)
+        bullets -= 1
+
+    # Jump physics
+    if is_jumping:
+        dino_velocity_y += gravity
+        dino.y += dino_velocity_y
+        if dino.y >= 220:
+            dino.y = 220
+            is_jumping = False
+            dino_velocity_y = 0
+
+    # Spawning
+    spawn_timer += 1
+    if spawn_timer > 60:
+        if random.random() < 0.7:
+            spawn_obstacle()
         else:
-            draw_text("Game Over!", 330, 250)
-            draw_scores()
+            spawn_fruit()
+        spawn_timer = 0
 
-    # This refreshes the screen, check for inputs
+    # Move enemies and bullets
+    for enemy in enemies:
+        enemy["rect"].x -= int(game_speed)
+    enemies = [e for e in enemies if e["rect"].x + e["rect"].width > 0]
+
+    for fruit in fruits:
+        fruit.x -= int(game_speed)
+    fruits = [f for f in fruits if f.x + f.width > 0]
+
+    for bullet in bullets_fired:
+        bullet.x += 10
+    bullets_fired = [b for b in bullets_fired if b.x < WIDTH]
+
+    # Collisions
+    handle_collisions()
+
+    # Drawing
+    pygame.draw.rect(screen, DINO_COLOR, dino)
+
+    for enemy in enemies:
+        color = TREE_COLOR if enemy["type"] == "tree" else BIRD_COLOR
+        pygame.draw.rect(screen, color, enemy["rect"])
+
+    for fruit in fruits:
+        pygame.draw.rect(screen, FRUIT_COLOR, fruit)
+
+    for bullet in bullets_fired:
+        pygame.draw.rect(screen, BULLET_COLOR, bullet)
+
+    # UI
+    score += 0.5
+    draw_text(f"Score: {int(score)}", 20, 20)
+    draw_text(f"Level: {level}", 20, 50)
+    draw_text(f"Bullets: {bullets}", 20, 80)
+    draw_text(f"Stamina: {stamina}", 20, 110)
+
     pygame.display.flip()
+
+pygame.quit()
