@@ -1,14 +1,63 @@
+
+
+
+
 import pygame
 import random
 import sys
 
 # Initialize Pygame
 pygame.init()
-WIDTH, HEIGHT = 800, 300
+WIDTH, HEIGHT = 1200, 250
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Dino Sprint: Elemental Run")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
+
+
+
+
+def load_images(prefix, count, scale):
+    return [
+        pygame.transform.scale(pygame.image.load(f"{prefix}{i}.png").convert_alpha(), scale)
+        for i in range(1, count + 1)
+    ]
+
+
+dino_run_imgs = load_images("run", 6, (60, 60))
+dino_jump_imgs = load_images("jump", 6, (60, 60))  # You have 6 jump frames!
+dino_shoot_imgs = load_images("shoot", 4, (60, 60))
+
+
+
+
+
+
+#tree image load
+tree_img = pygame.image.load("tree.png").convert_alpha()
+
+tree_img = pygame.transform.scale(tree_img, (30, 40))  # Match the tree size
+
+
+tree_img = pygame.transform.scale(tree_img, (40, 60))
+
+
+#bird images load
+bird_imgs = [
+    pygame.transform.scale(pygame.image.load("bird1.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("bird2.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("bird3.png").convert_alpha(), (30, 30)),
+]
+
+
+
+bird_imgs = [pygame.transform.scale(img, (40, 40)) for img in bird_imgs]
+
+
+#Playing background music
+pygame.mixer.music.load("bgm.mp3")
+pygame.mixer.music.set_volume(0.5)  # set volume to 50%
+pygame.mixer.music.play(-1)  
 
 # Colors
 WHITE = (255, 255, 255)
@@ -20,9 +69,9 @@ BULLET_COLOR = (255, 255, 0)
 BG_COLOR = (180, 240, 255)
 
 # Dino setup
-dino = pygame.Rect(50, 220, 40, 40)
+dino = pygame.Rect(50, HEIGHT - 80, 40, 60) 
 gravity = 1.2
-jump_velocity = -16
+jump_velocity = -20
 dino_velocity_y = 0
 is_jumping = False
 
@@ -48,16 +97,17 @@ def draw_text(text, x, y):
 def spawn_obstacle():
     kind = random.choice(["tree", "bird"])
     if kind == "tree":
-        rect = pygame.Rect(WIDTH, 220, 30, 40)
+        rect = pygame.Rect(WIDTH, HEIGHT - 80, 40, 60)
     else:
-        bird_y = random.choice([160, 200])
-        rect = pygame.Rect(WIDTH, bird_y, 30, 30)
+        bird_y = random.choice([HEIGHT - 160, HEIGHT - 120])
+        rect = pygame.Rect(WIDTH, bird_y, 40, 40)
     enemies.append({"rect": rect, "type": kind})
 
 
 def spawn_fruit():
-    fruit_rect = pygame.Rect(WIDTH, random.randint(180, 240), 20, 20)
+    fruit_rect = pygame.Rect(WIDTH, random.randint(HEIGHT - 120, HEIGHT - 60), 25, 25)
     fruits.append(fruit_rect)
+
 
 
 def handle_collisions():
@@ -120,32 +170,65 @@ def level_up():
                     stamina = min(100, stamina + 30)
                     choosing = False
 
-# Main loop
+
+
+
+
+bird_frame_index = 0
+bird_frame_timer = 0
+
+
+dino_state = "run"  
+dino_frame_index = 0
+dino_frame_timer = 0
+
+
+
+is_shooting = False
+shooting_timer = 0
+
+
+
+
+
+
 running = True
 while running:
     dt = clock.tick(60)
+   
+    prev_dino_state = dino_state  # Save the previous state for comparison
+
+   
+   
     elapsed = pygame.time.get_ticks() - start_time
     screen.fill(BG_COLOR)
 
-    # LEVEL PROGRESSION
+
+
+
+    # Animate birds
+    bird_frame_timer += 1
+    if bird_frame_timer > 5:
+        bird_frame_index = (bird_frame_index + 1) % len(bird_imgs)
+        bird_frame_timer = 0
+
+    # Level progression
     current_level = min(3, elapsed // LEVEL_DURATION + 1)
     if current_level != level:
         level = current_level
         if level <= 3:
             level_up()
-
     if level > 3:
         win_game()
 
     game_speed = 5 + level + (elapsed / 15000)
 
-    # Decrease stamina over time
     if pygame.time.get_ticks() % 1000 < 20:
         stamina -= 1
         if stamina <= 0:
             game_over()
 
-    # Events
+    # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -161,20 +244,62 @@ while running:
         bullets -= 1
         bullet_cooldown = True
         bullet_cooldown_time = pygame.time.get_ticks()
+    
+    # Set shooting state
+        is_shooting = True
+        shooting_timer = 10  # show shoot animation for a few frames
+
 
     if bullet_cooldown and pygame.time.get_ticks() - bullet_cooldown_time > 300:
         bullet_cooldown = False
 
-    # Jump physics
+    if is_shooting:
+        shooting_timer -= 1
+        if shooting_timer <= 0:
+            is_shooting = False
+
+
+
+
+
     if is_jumping:
         dino_velocity_y += gravity
         dino.y += dino_velocity_y
-        if dino.y >= 220:
-            dino.y = 220
+        if dino.y >= HEIGHT - 80:
+            dino.y = HEIGHT - 80
             is_jumping = False
             dino_velocity_y = 0
 
-    # Spawning
+    if is_jumping:
+        dino_state = "jump"
+    elif is_shooting:
+        dino_state = "shoot"
+    else:
+        dino_state = "run"
+
+
+# Reset animation index if state changed
+    if dino_state != prev_dino_state:
+        dino_frame_index = 0
+        dino_frame_timer = 0
+
+
+
+
+    # Update animation frame
+    dino_frame_timer += 1
+    if dino_frame_timer > 6:
+        dino_frame_timer = 0
+        dino_frame_index += 1
+
+        if dino_state == "run":
+            dino_frame_index %= len(dino_run_imgs)
+        elif dino_state == "jump":
+            dino_frame_index %= len(dino_jump_imgs)
+        elif dino_state == "shoot":
+            dino_frame_index %= len(dino_shoot_imgs)
+
+    # Spawn enemies/fruits
     spawn_timer += 1
     if spawn_timer > 60:
         if random.random() < 0.7:
@@ -183,7 +308,6 @@ while running:
             spawn_fruit()
         spawn_timer = 0
 
-    # Move enemies and bullets
     for enemy in enemies:
         enemy["rect"].x -= int(game_speed)
     enemies = [e for e in enemies if e["rect"].x + e["rect"].width > 0]
@@ -196,27 +320,33 @@ while running:
         bullet.x += 10
     bullets_fired = [b for b in bullets_fired if b.x < WIDTH]
 
-    # Collisions
     handle_collisions()
 
-    # Drawing
-    pygame.draw.rect(screen, DINO_COLOR, dino)
+    # Draw Dino
+    if dino_state == "run":
+        screen.blit(dino_run_imgs[dino_frame_index], dino)
+    elif dino_state == "jump":
+        screen.blit(dino_jump_imgs[dino_frame_index], dino)
+    elif dino_state == "shoot":
+        screen.blit(dino_shoot_imgs[dino_frame_index], dino)
 
+    # Draw enemies
     for enemy in enemies:
-        color = TREE_COLOR if enemy["type"] == "tree" else BIRD_COLOR
-        pygame.draw.rect(screen, color, enemy["rect"])
+        if enemy["type"] == "tree":
+            screen.blit(tree_img, enemy["rect"])
+        else:
+            screen.blit(bird_imgs[bird_frame_index], enemy["rect"])
 
+    # Draw fruits and bullets
     for fruit in fruits:
         pygame.draw.rect(screen, FRUIT_COLOR, fruit)
-
     for bullet in bullets_fired:
         pygame.draw.rect(screen, BULLET_COLOR, bullet)
 
-    # UI
+    # Draw UI
     draw_text(f"Level: {level}", 20, 20)
     draw_text(f"Bullets: {bullets}", 20, 50)
     draw_text(f"Stamina: {stamina}", 20, 80)
 
     pygame.display.flip()
 
-pygame.quit()
