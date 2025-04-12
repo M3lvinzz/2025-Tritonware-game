@@ -288,7 +288,7 @@ while running:
     
     # Set shooting state
         is_shooting = True
-        shooting_timer = 10  # show shoot animation for a few frames
+        shooting_timer = 30  # show shoot animation for a few frames
 
 
     if bullet_cooldown and pygame.time.get_ticks() - bullet_cooldown_time > 300:
