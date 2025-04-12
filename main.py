@@ -8,7 +8,7 @@ import sys
 
 # Initialize Pygame
 pygame.init()
-WIDTH, HEIGHT = 1200, 250
+WIDTH, HEIGHT = 1200, 210
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Dino Sprint: Elemental Run")
 clock = pygame.time.Clock()
