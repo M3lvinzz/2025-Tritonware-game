@@ -230,6 +230,7 @@ is_shooting = False
 shooting_timer = 0
 
 
+portraits = load_images('assets/portrait', count = 6, scale = (60, 60))
 
 
 
@@ -237,7 +238,7 @@ shooting_timer = 0
 running = True
 while running:
     dt = clock.tick(60)
-   
+
     prev_dino_state = dino_state  # Save the previous state for comparison
 
    

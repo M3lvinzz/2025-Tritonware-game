@@ -11,7 +11,7 @@ def load_images(prefix, count, scale):
         for i in range(1, count + 1)
     ]
 # Load assets
-bg = pygame.image.load("assets/background.png")
+bg = pygame.image.load("assets/background1.png")
 portraits = load_images('assets/portrait', count = 6, scale = (60, 60))
 
 tutorial(screen, bg, portraits= portraits)
