@@ -23,7 +23,7 @@ dino_shoot_imgs = load_images("assets/shoot", 4, (100, 100))
 
 # Load and scale fruit image
 food_img = pygame.image.load("assets/food.png").convert_alpha()
-food_img = pygame.transform.scale(food_img, (25, 25))  # Match your fruit size
+food_img = pygame.transform.scale(food_img, (40, 40))  # Match your fruit size
 
 
 
@@ -31,7 +31,10 @@ food_img = pygame.transform.scale(food_img, (25, 25))  # Match your fruit size
 #tree image load
 tree_img = pygame.image.load("assets/tree.png").convert_alpha()
 
-tree_img = pygame.transform.scale(tree_img, (40, 60))
+tree_img = pygame.transform.scale(tree_img, (60, 80))
+
+car1_img = pygame.transform.scale(pygame.image.load("assets/car1.png").convert_alpha(), (60, 40))
+car2_img = pygame.transform.scale(pygame.image.load("assets/car2.png").convert_alpha(), (60, 40))
 
 #mana image load
 
@@ -42,9 +45,9 @@ mana_img = pygame.transform.scale(mana_img, (40, 40))
 
 #bird images load
 bird_imgs = [
-    pygame.transform.scale(pygame.image.load("assets/bird1.png").convert_alpha(), (30, 30)),
-    pygame.transform.scale(pygame.image.load("assets/bird2.png").convert_alpha(), (30, 30)),
-    pygame.transform.scale(pygame.image.load("assets/bird3.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/bird1.png").convert_alpha(), (70, 70)),
+    pygame.transform.scale(pygame.image.load("assets/bird2.png").convert_alpha(), (70, 70)),
+    pygame.transform.scale(pygame.image.load("assets/bird3.png").convert_alpha(), (70, 70)),
 ]
 
 #stamina bar images load
@@ -87,7 +90,7 @@ BULLET_COLOR = (255, 255, 0)
 BG_COLOR = (180, 240, 255)
 
 # Dino setup
-dino = pygame.Rect(50, HEIGHT - 80, 40, 60) 
+dino = pygame.Rect(50, HEIGHT - 100, 40, 60) 
 gravity = 1.2
 jump_velocity = -20
 dino_velocity_y = 0
@@ -296,7 +299,7 @@ while running:
     
     # Set shooting state
         is_shooting = True
-        shooting_timer = 10  # show shoot animation for a few frames
+        shooting_timer = 30  # show shoot animation for a few frames
 
 
     if bullet_cooldown and pygame.time.get_ticks() - bullet_cooldown_time > 300:
@@ -314,8 +317,8 @@ while running:
     if is_jumping:
         dino_velocity_y += gravity
         dino.y += dino_velocity_y
-        if dino.y >= HEIGHT - 80:
-            dino.y = HEIGHT - 80
+        if dino.y >= HEIGHT - 90:
+            dino.y = HEIGHT - 90
             is_jumping = False
             dino_velocity_y = 0
 
@@ -389,6 +392,9 @@ while running:
             screen.blit(car1_img, enemy["rect"])
         elif enemy["type"] == "car2":
             screen.blit(car2_img, enemy["rect"])
+
+    # DRAW TIMER HERE
+    draw_level_timer(elapsed, level)
 
     # Draw fruits and bullets
     for food in foods:
