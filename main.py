@@ -6,7 +6,7 @@ import sys
 pygame.init()
 WIDTH, HEIGHT = 1200, 500
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Dino Sprint: Elemental Run")
+pygame.display.set_caption("Dino Dash")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
 
@@ -78,7 +78,7 @@ bird_imgs = [pygame.transform.scale(img, (40, 40)) for img in bird_imgs]
 
 
 #Playing background music
-pygame.mixer.music.load("forestbgm.mp3")
+pygame.mixer.music.load("music/forestbgm.mp3")
 pygame.mixer.music.set_volume(0.5)  # set volume to 50%
 pygame.mixer.music.play(-1)  
 
