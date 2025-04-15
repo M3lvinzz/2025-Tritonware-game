@@ -10,16 +10,11 @@ pygame.display.set_caption("Dino Dash")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
 
-
-
-
-
 def load_images(prefix, count, scale):
     return [
         pygame.transform.scale(pygame.image.load(f"{prefix}{i}.png").convert_alpha(), scale)
         for i in range(1, count + 1)
     ]
-
 
 dino_run_imgs = load_images("assets/run", 6, (100, 100))
 dino_jump_imgs = load_images("assets/jump", 6, (100, 100))  # You have 6 jump frames!
@@ -65,8 +60,8 @@ stamina_bar_imgs = [
 ]
 
 # Load background image
-bg_img = pygame.image.load("assets/background.png").convert()
-bg_img = pygame.transform.scale(bg_img, (WIDTH, HEIGHT))
+bg_img1 = pygame.transform.scale(pygame.image.load("assets/background1.png").convert(), (WIDTH, HEIGHT))
+bg_img2 = pygame.transform.scale(pygame.image.load("assets/background2.png").convert(), (WIDTH, HEIGHT))
 
 
 bg_x = 0
@@ -120,12 +115,18 @@ def draw_text(text, x, y):
 
 
 def spawn_obstacle():
-    kind = random.choice(["tree", "bird"])
+    if level == 2:
+        kind = random.choice(["car1", "car2", "tree", "bird"])
+    else:
+        kind = random.choice(["tree", "bird"])
+
     if kind == "tree":
         rect = pygame.Rect(WIDTH, HEIGHT - 80, 40, 60)
-    else:
+    elif kind == "bird":
         bird_y = random.choice([HEIGHT - 160, HEIGHT - 120])
         rect = pygame.Rect(WIDTH, bird_y, 40, 40)
+    elif kind == "car1" or kind == "car2":
+        rect = pygame.Rect(WIDTH, HEIGHT - 70, 60, 40)  # Car height = 40
     enemies.append({"rect": rect, "type": kind})
 
 
@@ -133,7 +134,16 @@ def spawn_foods():
     food_rect = pygame.Rect(WIDTH, random.randint(HEIGHT - 120, HEIGHT - 60), 25, 25)
     foods.append(food_rect)
 
+def draw_level_timer(elapsed, level):
+    level_start_time = (level - 1) * LEVEL_DURATION
+    level_elapsed = max(0, elapsed - level_start_time)
+    level_remaining = max(0, LEVEL_DURATION - level_elapsed)
 
+    progress_width = 200
+    fill_width = int(progress_width * (level_elapsed / LEVEL_DURATION))
+
+    pygame.draw.rect(screen, WHITE, (950, 20, progress_width, 20), 2)  # Outline
+    pygame.draw.rect(screen, (0, 200, 0), (950, 20, fill_width, 20))   # Fill bar
 
 def handle_collisions():
     global stamina, last_damage_time
@@ -239,8 +249,9 @@ while running:
         bg_x = 0
 
 # Draw background images side-by-side for looping
-    screen.blit(bg_img, (bg_x, 0))
-    screen.blit(bg_img, (bg_x + WIDTH, 0))
+    current_bg = bg_img1 if level != 2 else bg_img2
+    screen.blit(current_bg, (bg_x, 0))
+    screen.blit(current_bg, (bg_x + WIDTH, 0))
 
 
 
@@ -372,8 +383,12 @@ while running:
     for enemy in enemies:
         if enemy["type"] == "tree":
             screen.blit(tree_img, enemy["rect"])
-        else:
+        elif enemy["type"] == "bird":
             screen.blit(bird_imgs[bird_frame_index], enemy["rect"])
+        elif enemy["type"] == "car1":
+            screen.blit(car1_img, enemy["rect"])
+        elif enemy["type"] == "car2":
+            screen.blit(car2_img, enemy["rect"])
 
     # Draw fruits and bullets
     for food in foods:
