@@ -1,7 +1,3 @@
-
-
-
-
 import pygame
 import random
 import sys
@@ -13,6 +9,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Dino Sprint: Elemental Run")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
+
 
 
 
@@ -30,31 +27,48 @@ dino_shoot_imgs = load_images("shoot", 4, (60, 60))
 
 
 # Load and scale fruit image
-food_img = pygame.image.load("food.png").convert_alpha()
+food_img = pygame.image.load("assets/food.png").convert_alpha()
 food_img = pygame.transform.scale(food_img, (25, 25))  # Match your fruit size
 
 
 
 
 #tree image load
-tree_img = pygame.image.load("tree.png").convert_alpha()
+tree_img = pygame.image.load("assets/tree.png").convert_alpha()
 
 tree_img = pygame.transform.scale(tree_img, (30, 40))  # Match the tree size
 
 
 tree_img = pygame.transform.scale(tree_img, (40, 60))
 
+#mana image load
+
+mana_img = pygame.image.load("assets/mana.png").convert_alpha()
+
+mana_img = pygame.transform.scale(mana_img, (40, 40))
+
 
 #bird images load
 bird_imgs = [
-    pygame.transform.scale(pygame.image.load("bird1.png").convert_alpha(), (30, 30)),
-    pygame.transform.scale(pygame.image.load("bird2.png").convert_alpha(), (30, 30)),
-    pygame.transform.scale(pygame.image.load("bird3.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/bird1.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/bird2.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/bird3.png").convert_alpha(), (30, 30)),
 ]
 
+#stamina bar images load
+stamina_bar_imgs = [
+    pygame.transform.scale(pygame.image.load("assets/stamina1.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/stamina2.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/stamina3.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/stamina4.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/stamina5.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/stamina6.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/stamina7.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/stamina8.png").convert_alpha(), (30, 30)),
+]
 
 # Load background image
-bg_img = pygame.image.load("background.png").convert()
+bg_img = pygame.image.load("assets/background.png").convert()
 bg_img = pygame.transform.scale(bg_img, (WIDTH, HEIGHT))
 
 
@@ -99,6 +113,8 @@ LEVEL_DURATION = 30000
 spawn_timer = 0
 bullet_cooldown = False
 bullet_cooldown_time = 0
+last_damage_time = 0
+damage_cooldown = 1000
 
 
 def draw_text(text, x, y):
@@ -123,10 +139,15 @@ def spawn_foods():
 
 
 def handle_collisions():
-    global stamina
+    global stamina, last_damage_time
+    now = pygame.time.get_ticks()
     for enemy in enemies:
         if dino.colliderect(enemy["rect"]):
-            game_over()
+            if now - last_damage_time > damage_cooldown:
+                stamina -= 20
+                last_damage_time = now
+            if stamina <= 0:
+                game_over()
 
     for food in foods[:]:
         if dino.colliderect(food):
@@ -149,7 +170,6 @@ def game_over():
     pygame.time.wait(2000)
     pygame.quit()
     sys.exit()
-
 
 def win_game():
     screen.fill(BG_COLOR)
@@ -367,8 +387,25 @@ while running:
 
     # Draw UI
     draw_text(f"Level: {level}", 20, 20)
-    draw_text(f"Bullets: {bullets}", 20, 50)
-    draw_text(f"Stamina: {stamina}", 20, 80)
+
+    # Code for stamina bar
+    bar_x, bar_y = 20, 50
+    bar_width, bar_height = 100, 20
+    bar_fill = int((stamina / 100) * bar_width)
+
+    pygame.draw.rect(screen, (255,255,255), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(screen, (0,255,0), (bar_x, bar_y, bar_fill, bar_height))
+
+    stamina_index = int((stamina / 100) * (len(stamina_bar_imgs) - 1))
+    stamina_index = 7 - min(7, stamina // 13)
+
+    stamina_img = stamina_bar_imgs[stamina_index]
+
+    screen.blit(stamina_img, (bar_x + bar_width + 10, bar_y - 10))
+
+    # Mana bullets display
+    for i in range(bullets):
+        screen.blit(mana_img, (bar_x + bar_width + 50 + i * 35, bar_y - 10))
 
     pygame.display.flip()
 
