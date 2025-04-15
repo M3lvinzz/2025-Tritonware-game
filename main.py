@@ -1,14 +1,10 @@
-
-
-
-
 import pygame
 import random
 import sys
 
 # Initialize Pygame
 pygame.init()
-WIDTH, HEIGHT = 1200, 210
+WIDTH, HEIGHT = 1200, 500
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Dino Sprint: Elemental Run")
 clock = pygame.time.Clock()
@@ -24,37 +20,33 @@ def load_images(prefix, count, scale):
     ]
 
 
-dino_run_imgs = load_images("run", 6, (60, 60))
-dino_jump_imgs = load_images("jump", 6, (60, 60))  # You have 6 jump frames!
-dino_shoot_imgs = load_images("shoot", 4, (60, 60))
+dino_run_imgs = load_images("assets/run", 6, (100, 100))
+dino_jump_imgs = load_images("assets/jump", 6, (100, 100))  # You have 6 jump frames!
+dino_shoot_imgs = load_images("assets/shoot", 4, (100, 100))
 
 
 # Load and scale fruit image
-food_img = pygame.image.load("food.png").convert_alpha()
+food_img = pygame.image.load("assets/food.png").convert_alpha()
 food_img = pygame.transform.scale(food_img, (25, 25))  # Match your fruit size
 
 
 
 
 #tree image load
-tree_img = pygame.image.load("tree.png").convert_alpha()
-
-tree_img = pygame.transform.scale(tree_img, (30, 40))  # Match the tree size
-
-
+tree_img = pygame.image.load("assets/tree.png").convert_alpha()
 tree_img = pygame.transform.scale(tree_img, (40, 60))
 
 
 #bird images load
 bird_imgs = [
-    pygame.transform.scale(pygame.image.load("bird1.png").convert_alpha(), (30, 30)),
-    pygame.transform.scale(pygame.image.load("bird2.png").convert_alpha(), (30, 30)),
-    pygame.transform.scale(pygame.image.load("bird3.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/bird1.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/bird2.png").convert_alpha(), (30, 30)),
+    pygame.transform.scale(pygame.image.load("assets/bird3.png").convert_alpha(), (30, 30)),
 ]
 
 
 # Load background image
-bg_img = pygame.image.load("background.png").convert()
+bg_img = pygame.image.load("assets/background.png").convert()
 bg_img = pygame.transform.scale(bg_img, (WIDTH, HEIGHT))
 
 
