@@ -99,26 +99,18 @@ while running:
             boss_attack_type = random.choice(["bullet_fan", "spiral"])
             boss_attack_timer = now
 
-        # Bullet Fan
+        # Bullet Fan (shoots LEFT)
         if boss_attack_type == "bullet_fan" and now % 1500 < 20:
+            base_angle = math.pi  # shoot to the left
             for i in range(-3, 4):
-                angle = i * 0.3
+                angle = base_angle + i * 0.2
                 boss_bullets.append({
-                    "x": boss.centerx,
-                    "y": boss.centery,
-                    "vx": 5 * math.cos(angle),
-                    "vy": 5 * math.sin(angle)
-                })
+                     "x": boss.centerx,
+                     "y": boss.centery,
+                     "vx": 5 * math.cos(angle),
+                     "vy": 5 * math.sin(angle)
+        })
 
-        # Spiral Bullets
-        if boss_attack_type == "spiral" and now % 100 < 10:
-            spiral_angle += 0.2
-            boss_bullets.append({
-                "x": boss.centerx,
-                "y": boss.centery,
-                "vx": 4 * math.cos(spiral_angle),
-                "vy": 4 * math.sin(spiral_angle)
-            })
 
         # Move Boss Bullets
         for b in boss_bullets:
