@@ -29,6 +29,12 @@ class Cutscene:
         running = True
         print("🟡 Cutscene started...")  # checkpoint
 
+        pygame.mixer.music.load("music/cutscene_bgm.mp3")
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1)
+
+
+
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -40,6 +46,7 @@ class Cutscene:
                     self.current_event_index += 1
                     if self.current_event_index >= len(self.events):
                         print("🟢 Cutscene ended")
+                        pygame.mixer.music.fadeout(1000)
                         running = False
                         return  # Safely exit
 
@@ -98,6 +105,8 @@ def tutorial(screen, bg, portraits):
 def run_game():
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 36)
+    big_font = pygame.font.SysFont("Arial", 80, bold=True)
+
     running = True
     while running:
         dt = clock.tick(60)
@@ -120,7 +129,8 @@ def run_game():
         last_damage_time = 0
         damage_cooldown = 1000
         
-
+        boss_intro_active = False
+        boss_intro_timer = 0
         
 
         dino_run_imgs = load_images("assets/run", 6, (100, 100))
@@ -142,8 +152,8 @@ def run_game():
 
         tree_img = pygame.transform.scale(tree_img, (60, 80))
 
-        car1_img = pygame.transform.scale(pygame.image.load("assets/car1.png").convert_alpha(), (80, 60))
-        car2_img = pygame.transform.scale(pygame.image.load("assets/car2.png").convert_alpha(), (80, 60))
+        car1_img = pygame.transform.scale(pygame.image.load("assets/car1.png").convert_alpha(), (100, 80))
+        car2_img = pygame.transform.scale(pygame.image.load("assets/car2.png").convert_alpha(), (100, 80))
 
         #mana image load
 
@@ -189,6 +199,15 @@ def run_game():
         pygame.mixer.music.set_volume(0.5)  # set volume to 50%
         pygame.mixer.music.play(-1)  
 
+        jump_sound = pygame.mixer.Sound("music/jumpsound2.mp3")
+        hurt_sound = pygame.mixer.Sound("music/hurtsound.mp3")
+        shoot_sound = pygame.mixer.Sound("music/shoot.mp3")
+
+        jump_sound.set_volume(0.4)
+        hurt_sound.set_volume(0.6)
+        shoot_sound.set_volume(0.5)
+
+
         # Colors
         WHITE = (255, 255, 255)
         DINO_COLOR = (0, 200, 0)
@@ -226,8 +245,12 @@ def run_game():
         last_fan_fire = 0
 
 
+        boss_entry_timer = 0
+        boss_appearing = False
+        boss_y_offset = -100  
 
-
+        boss_target_x = WIDTH - 250
+        boss_target_y = 60
 
 
 
@@ -281,6 +304,8 @@ def run_game():
                     if now - last_damage_time > damage_cooldown:
                         stamina -= 20
                         last_damage_time = now
+                        hurt_sound.play()
+                    
                     if stamina <= 0:
                         game_over()
 
@@ -383,6 +408,13 @@ def run_game():
             screen.blit(current_bg, (bg_x, 0))
             screen.blit(current_bg, (bg_x + WIDTH, 0))
 
+            # === Add white gradient overlay ===
+            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            for y in range(HEIGHT):
+                alpha = int(140 * ((y / HEIGHT) ** 2))  # 下越大，上越小
+                pygame.draw.line(overlay, (255, 255, 255, alpha), (0, y), (WIDTH, y))
+            screen.blit(overlay, (0, 0))
+
 
 
             # Animate birds
@@ -395,13 +427,36 @@ def run_game():
             current_level = min(3, elapsed // LEVEL_DURATION + 1)
             if current_level != level:
                 level = current_level
+                
+                    # === Switch Background Music by Level ===
+                if level == 2:
+                    pygame.mixer.music.load("music/level2_bgm.mp3")
+                    pygame.mixer.music.play(-1)
+                elif level == 3:
+                    pygame.mixer.music.load("music/level3_bgm.mp3")
+                    pygame.mixer.music.play(-1)
+
+                
+                
+                
+                
+                
+                
                 if level <= 3:
                     level_up()
             #bossadd
                 if level == 3:
-                    boss_active = True
-                    boss_move_timer = pygame.time.get_ticks()
-                    boss_attack_timer = pygame.time.get_ticks()
+                    boss_appearing = True
+                    boss_active = False
+                    boss_entry_timer = pygame.time.get_ticks()
+                    boss.x = WIDTH + 100  # 右侧外部
+                    boss.y = -100         # 屏幕上方外部
+ # 暂不激活
+                    
+                    boss_intro_active = True
+                    boss_intro_timer = pygame.time.get_ticks()
+                    #pygame.mixer.Sound("sounds/boss_warning.wav").play()
+
 
             
             #bossadd
@@ -425,6 +480,8 @@ def run_game():
             if keys[pygame.K_UP] and not is_jumping:
                 dino_velocity_y = jump_velocity
                 is_jumping = True
+                jump_sound.play()
+
 
             if keys[pygame.K_RIGHT] and bullets > 0 and not bullet_cooldown:
                 bullet = {
@@ -436,6 +493,9 @@ def run_game():
                 bullets -= 1
                 bullet_cooldown = True
                 bullet_cooldown_time = pygame.time.get_ticks()
+                shoot_sound.play()
+            
+            
             
             # Set shooting state
                 is_shooting = True
@@ -521,6 +581,36 @@ def run_game():
 
 
 
+            # === Boss延迟登场（飞入）动画 ===
+            if level == 3 and boss_appearing:
+                time_since_entry = pygame.time.get_ticks() - boss_entry_timer
+
+    # boss缓缓滑入
+                target_x = WIDTH - 300
+                if boss.x > target_x:
+                    boss.x -= 4  # 控制飞入速度（越小越慢）
+
+    # 5 秒后启用 Boss 攻击
+                if time_since_entry >= 5000 and boss.x <= target_x:
+                    boss_active = True
+                    boss_appearing = False
+                    boss_move_timer = pygame.time.get_ticks()
+                    boss_attack_timer = pygame.time.get_ticks()
+                    boss.x += (target_x - boss.x) * 0.1  # 越来越慢地接近
+
+
+# 控制飞入速度
+            if boss_appearing:
+                boss.x += (boss_target_x - boss.x) * 0.05
+                boss.y += (boss_target_y - boss.y) * 0.05
+
+                if abs(boss.x - boss_target_x) < 2 and abs(boss.y - boss_target_y) < 2:
+                    boss.x = boss_target_x
+                    boss.y = boss_target_y
+                    boss_appearing = False
+                    boss_active = True
+                    boss_move_timer = pygame.time.get_ticks()
+
 
 
 
@@ -534,7 +624,7 @@ def run_game():
                     boss_target = pygame.Vector2(
                         random.randint(600, WIDTH - 100),
                         random.randint(20, HEIGHT // 2)
-                )
+                    )
                     boss_move_timer = now
 
                 # Smooth boss movement
@@ -584,9 +674,12 @@ def run_game():
                         if now - last_damage_time > damage_cooldown:
                             stamina -= 20
                             last_damage_time = now
+                            hurt_sound.play()
                         if stamina <= 0:
                             game_over()
-
+                            
+           
+           
             # Check collision: Your bullets → boss
                 for bullet in bullets_fired[:]:
                     if boss.colliderect(bullet["rect"]):
@@ -648,13 +741,14 @@ def run_game():
             # Draw enemies
             for enemy in enemies:
                 if enemy["type"] == "tree":
-                    screen.blit(tree_img, enemy["rect"])
+                    screen.blit(tree_img, (enemy["rect"].x - 10, enemy["rect"].y))  
                 elif enemy["type"] == "bird":
-                    screen.blit(bird_imgs[bird_frame_index], enemy["rect"])
+                    screen.blit(bird_imgs[bird_frame_index], (enemy["rect"].x, enemy["rect"].y - 10))
                 elif enemy["type"] == "car1":
-                    screen.blit(car1_img, enemy["rect"])
+                    screen.blit(car1_img, (enemy["rect"].x-10, enemy["rect"].y - 20))  
                 elif enemy["type"] == "car2":
-                    screen.blit(car2_img, enemy["rect"])
+                    screen.blit(car2_img, (enemy["rect"].x-10, enemy["rect"].y - 20))
+
                     # 🛠 DEBUG: Draw enemy hitboxes
                 pygame.draw.rect(screen, (255, 0, 0), enemy["rect"], 2)
 
@@ -667,6 +761,20 @@ def run_game():
 
             for bullet in bullets_fired:
                 screen.blit(bullet_img, (bullet["x"], bullet["y"]))
+
+            if boss_intro_active:
+                time_since_intro = pygame.time.get_ticks() - boss_intro_timer
+                if time_since_intro < 3000:  # 播放 3 秒
+                    if (time_since_intro // 500) % 2 == 0:  # 每 0.5 秒闪一下
+                        warning_text = big_font.render("WARNING!", True, (255, 0, 0))
+                        text_rect = warning_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                        screen.blit(warning_text, text_rect)
+                else:
+                    boss_intro_active = False
+
+
+
+
 
 
             # Draw UI
