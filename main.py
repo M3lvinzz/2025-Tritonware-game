@@ -716,7 +716,7 @@ def run_game():
         elif dino_state == "jump":
             screen.blit(dino_jump_imgs[dino_frame_index], dino)
         elif dino_state == "shoot":
-            screen.blit(dino_shoot_imgs[dino_frame_index], dino
+            screen.blit(dino_shoot_imgs[dino_frame_index], dino)
 
             pygame.draw.rect(screen, (255, 0, 0), dino, 2)
 
