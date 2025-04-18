@@ -2,8 +2,6 @@ import pygame
 import random
 import math
 import sys
-from dino import Player
-from cutscene_test import *
 
 # Initialize
 pygame.init()
@@ -53,39 +51,6 @@ while running:
     dt = clock.tick(60)
     now = pygame.time.get_ticks()
     screen.fill(BG_COLOR)
-
-    tutorial(screen, current_bg, portraits)
-
-    game_speed = 5 + level + (elapsed / 15000)
-    bg_x -= int(game_speed * 0.5)
-    if bg_x <= -WIDTH:
-        bg_x = 0
-    current_bg = bg_img1 if level != 2 else bg_img2
-    screen.blit(current_bg, (bg_x, 0))
-    screen.blit(current_bg, (bg_x + WIDTH, 0))
-
-    bird_frame_timer += 1
-    if bird_frame_timer > 5:
-        bird_frame_index = (bird_frame_index + 1) % len(bird_imgs)
-        bird_frame_timer = 0
-
-    current_level = min(3, elapsed // LEVEL_DURATION + 1)
-    if current_level != level:
-        level = current_level
-        if level <= 3:
-            level_up()
-    if level > 3:
-        win_game()
-
-    if pygame.time.get_ticks() % 1000 < 20:
-        stamina -= 1
-        if stamina <= 0:
-            game_over()
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
     keys = pygame.key.get_pressed()
 
     # === Player Movement ===
@@ -134,26 +99,18 @@ while running:
             boss_attack_type = random.choice(["bullet_fan", "spiral"])
             boss_attack_timer = now
 
-        # Bullet Fan
+        # Bullet Fan (shoots LEFT)
         if boss_attack_type == "bullet_fan" and now % 1500 < 20:
+            base_angle = math.pi  # shoot to the left
             for i in range(-3, 4):
-                angle = i * 0.3
+                angle = base_angle + i * 0.2
                 boss_bullets.append({
-                    "x": boss.centerx,
-                    "y": boss.centery,
-                    "vx": 5 * math.cos(angle),
-                    "vy": 5 * math.sin(angle)
-                })
+                     "x": boss.centerx,
+                     "y": boss.centery,
+                     "vx": 5 * math.cos(angle),
+                     "vy": 5 * math.sin(angle)
+        })
 
-        # Spiral Bullets
-        if boss_attack_type == "spiral" and now % 100 < 10:
-            spiral_angle += 0.2
-            boss_bullets.append({
-                "x": boss.centerx,
-                "y": boss.centery,
-                "vx": 4 * math.cos(spiral_angle),
-                "vy": 4 * math.sin(spiral_angle)
-            })
 
         # Move Boss Bullets
         for b in boss_bullets:

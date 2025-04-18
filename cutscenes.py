@@ -131,3 +131,22 @@ def ending(screen, bg, portraits):
         cutscene_events,
     )
     cutscene.play()
+    if __name__ == "__main__":
+        pygame.init()
+        WIDTH, HEIGHT = 1200, 500
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Cutscene Test")
+
+        # Load background and portraits
+        bg = pygame.image.load("assets/bg/cutscene_bg.png").convert()
+
+        def load_images(prefix, count, scale):
+            return [
+                pygame.transform.scale(pygame.image.load(f"{prefix}{i}.png").convert_alpha(), scale)
+                for i in range(1, count + 1)
+            ]
+
+        portraits = load_images("assets/portrait", count=6, scale=(60, 60))
+
+        # Play the cutscene
+        tutorial(screen, bg, portraits)
