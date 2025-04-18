@@ -412,293 +412,293 @@ def run_game():
             if bg_x <= -WIDTH:
                 bg_x = 0
 
-        # Draw background images side-by-side for looping
-            current_bg = bg_img1 if level != 2 else bg_img2
-            screen.blit(current_bg, (bg_x, 0))
-            screen.blit(current_bg, (bg_x + WIDTH, 0))
+    # Draw background images side-by-side for looping
+        current_bg = bg_img1 if level != 2 else bg_img2
+        screen.blit(current_bg, (bg_x, 0))
+        screen.blit(current_bg, (bg_x + WIDTH, 0))
 
-            # === Add white gradient overlay ===
-            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-            for y in range(HEIGHT):
-                alpha = int(140 * ((y / HEIGHT) ** 2))  # 下越大，上越小
-                pygame.draw.line(overlay, (255, 255, 255, alpha), (0, y), (WIDTH, y))
-            screen.blit(overlay, (0, 0))
-
-
-
-            # Animate birds
-            bird_frame_timer += 1
-            if bird_frame_timer > 5:
-                bird_frame_index = (bird_frame_index + 1) % len(bird_imgs)
-                bird_frame_timer = 0
-
-            # Level progression
-            current_level = min(3, elapsed // LEVEL_DURATION + 1)
-            if current_level != level:
-                level = current_level
-                
-                    # === Switch Background Music by Level ===
-                if level == 2:
-                    pygame.mixer.music.load("music/level2_bgm.mp3")
-                    pygame.mixer.music.play(-1)
-                elif level == 3:
-                    pygame.mixer.music.load("music/level3_bgm.mp3")
-                    pygame.mixer.music.play(-1)
-
-                
-                
-                
-                
-                
-                
-                if level <= 3:
-                    level_up()
-            #bossadd
-                if level == 3:
-                    boss_appearing = True
-                    boss_active = False
-                    boss_entry_timer = pygame.time.get_ticks()
-                    boss.x = WIDTH + 100  # 右侧外部
-                    boss.y = -100         # 屏幕上方外部
- # 暂不激活
-                    
-                    boss_intro_active = True
-                    boss_intro_timer = pygame.time.get_ticks()
-                    #pygame.mixer.Sound("sounds/boss_warning.wav").play()
+        # === Add white gradient overlay ===
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        for y in range(HEIGHT):
+            alpha = int(140 * ((y / HEIGHT) ** 2))  # 下越大，上越小
+            pygame.draw.line(overlay, (255, 255, 255, alpha), (0, y), (WIDTH, y))
+        screen.blit(overlay, (0, 0))
 
 
+
+        # Animate birds
+        bird_frame_timer += 1
+        if bird_frame_timer > 5:
+            bird_frame_index = (bird_frame_index + 1) % len(bird_imgs)
+            bird_frame_timer = 0
+
+        # Level progression
+        current_level = min(3, elapsed // LEVEL_DURATION + 1)
+        if current_level != level:
+            level = current_level
             
-            #bossadd
-                if level > 3:
-                    boss_active = False  # stop boss if still alive
-                    win_game()
+                # === Switch Background Music by Level ===
+            if level == 2:
+                pygame.mixer.music.load("music/level2_bgm.mp3")
+                pygame.mixer.music.play(-1)
+            elif level == 3:
+                pygame.mixer.music.load("music/level3_bgm.mp3")
+                pygame.mixer.music.play(-1)
 
-            
-
-            if pygame.time.get_ticks() % 1000 < 20:
-                stamina -= 1
-                if stamina <= 0:
-                    game_over()
-
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                    pause_game()
-
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP] and not is_jumping:
-                dino_velocity_y = jump_velocity
-                is_jumping = True
-                jump_sound.play()
-
-
-            if keys[pygame.K_RIGHT] and bullets > 0 and not bullet_cooldown:
-                bullet = {
-                    "rect": pygame.Rect(dino.right, dino.centery - 5, 20, 20),
-                    "x": dino.right,
-                    "y": dino.centery - 5
-                }
-                bullets_fired.append(bullet)
-                bullets -= 1
-                bullet_cooldown = True
-                bullet_cooldown_time = pygame.time.get_ticks()
-                shoot_sound.play()
             
             
             
-            # Set shooting state
-                is_shooting = True
-                shooting_timer = 30  # show shoot animation for a few frames
+            
+            
+            
+            if level <= 3:
+                level_up()
+        #bossadd
+            if level == 3:
+                boss_appearing = True
+                boss_active = False
+                boss_entry_timer = pygame.time.get_ticks()
+                boss.x = WIDTH + 100  # 右侧外部
+                boss.y = -100         # 屏幕上方外部
+# 暂不激活
+                
+                boss_intro_active = True
+                boss_intro_timer = pygame.time.get_ticks()
+                #pygame.mixer.Sound("sounds/boss_warning.wav").play()
 
 
-            if bullet_cooldown and pygame.time.get_ticks() - bullet_cooldown_time > 300:
-                bullet_cooldown = False
+        
+        #bossadd
+            if level > 3:
+                boss_active = False  # stop boss if still alive
+                win_game()
 
-            if is_shooting:
-                shooting_timer -= 1
-                if shooting_timer <= 0:
-                    is_shooting = False
+        
+
+        if pygame.time.get_ticks() % 1000 < 20:
+            stamina -= 1
+            if stamina <= 0:
+                game_over()
+
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                pause_game()
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP] and not is_jumping:
+            dino_velocity_y = jump_velocity
+            is_jumping = True
+            jump_sound.play()
+
+
+        if keys[pygame.K_RIGHT] and bullets > 0 and not bullet_cooldown:
+            bullet = {
+                "rect": pygame.Rect(dino.right, dino.centery - 5, 20, 20),
+                "x": dino.right,
+                "y": dino.centery - 5
+            }
+            bullets_fired.append(bullet)
+            bullets -= 1
+            bullet_cooldown = True
+            bullet_cooldown_time = pygame.time.get_ticks()
+            shoot_sound.play()
+        
+        
+        
+        # Set shooting state
+            is_shooting = True
+            shooting_timer = 30  # show shoot animation for a few frames
+
+
+        if bullet_cooldown and pygame.time.get_ticks() - bullet_cooldown_time > 300:
+            bullet_cooldown = False
+
+        if is_shooting:
+            shooting_timer -= 1
+            if shooting_timer <= 0:
+                is_shooting = False
 
 
 
 
 
-            if is_jumping:
-                dino_velocity_y += gravity
-                dino.y += dino_velocity_y
-                if dino.y >= HEIGHT - 90:
-                    dino.y = HEIGHT - 90
-                    is_jumping = False
-                    dino_velocity_y = 0
+        if is_jumping:
+            dino_velocity_y += gravity
+            dino.y += dino_velocity_y
+            if dino.y >= HEIGHT - 90:
+                dino.y = HEIGHT - 90
+                is_jumping = False
+                dino_velocity_y = 0
 
-            if is_jumping:
-                dino_state = "jump"
-            elif is_shooting:
-                dino_state = "shoot"
+        if is_jumping:
+            dino_state = "jump"
+        elif is_shooting:
+            dino_state = "shoot"
+        else:
+            dino_state = "run"
+
+
+    # Reset animation index if state changed
+        if dino_state != prev_dino_state:
+            dino_frame_index = 0
+            dino_frame_timer = 0
+
+
+
+
+        # Update animation frame
+        dino_frame_timer += 1
+        if dino_frame_timer > 6:
+            dino_frame_timer = 0
+            dino_frame_index += 1
+
+            if dino_state == "run":
+                dino_frame_index %= len(dino_run_imgs)
+            elif dino_state == "jump":
+                dino_frame_index %= len(dino_jump_imgs)
+            elif dino_state == "shoot":
+                dino_frame_index %= len(dino_shoot_imgs)
+
+        # Spawn enemies/fruits
+        spawn_timer += 1
+        if spawn_timer > 60:
+            if random.random() < 0.7:
+                spawn_obstacle()
             else:
-                dino_state = "run"
+                spawn_foods()
+            spawn_timer = 0
+
+        for enemy in enemies:
+            enemy["rect"].x -= int(game_speed)
+        enemies = [e for e in enemies if e["rect"].x + e["rect"].width > 0]
+
+        for food in foods:
+            food.x -= int(game_speed)
+        foods = [f for f in foods if f.x + f.width > 0]
+
+        for bullet in bullets_fired:
+            bullet["x"] += 10
+            bullet["rect"].x = bullet["x"]
+
+        bullets_fired = [b for b in bullets_fired if b["x"] < WIDTH]
 
 
-        # Reset animation index if state changed
-            if dino_state != prev_dino_state:
-                dino_frame_index = 0
-                dino_frame_timer = 0
-
-
-
-
-            # Update animation frame
-            dino_frame_timer += 1
-            if dino_frame_timer > 6:
-                dino_frame_timer = 0
-                dino_frame_index += 1
-
-                if dino_state == "run":
-                    dino_frame_index %= len(dino_run_imgs)
-                elif dino_state == "jump":
-                    dino_frame_index %= len(dino_jump_imgs)
-                elif dino_state == "shoot":
-                    dino_frame_index %= len(dino_shoot_imgs)
-
-            # Spawn enemies/fruits
-            spawn_timer += 1
-            if spawn_timer > 60:
-                if random.random() < 0.7:
-                    spawn_obstacle()
-                else:
-                    spawn_foods()
-                spawn_timer = 0
-
-            for enemy in enemies:
-                enemy["rect"].x -= int(game_speed)
-            enemies = [e for e in enemies if e["rect"].x + e["rect"].width > 0]
-
-            for food in foods:
-                food.x -= int(game_speed)
-            foods = [f for f in foods if f.x + f.width > 0]
-
-            for bullet in bullets_fired:
-                bullet["x"] += 10
-                bullet["rect"].x = bullet["x"]
-
-            bullets_fired = [b for b in bullets_fired if b["x"] < WIDTH]
-
-
-            handle_collisions()
+        handle_collisions()
 
 
 
 
 
-            # === Boss延迟登场（飞入）动画 ===
-            if level == 3 and boss_appearing:
-                time_since_entry = pygame.time.get_ticks() - boss_entry_timer
+        # === Boss延迟登场（飞入）动画 ===
+        if level == 3 and boss_appearing:
+            time_since_entry = pygame.time.get_ticks() - boss_entry_timer
 
-    # boss缓缓滑入
-                target_x = WIDTH - 300
-                if boss.x > target_x:
-                    boss.x -= 4  # 控制飞入速度（越小越慢）
+# boss缓缓滑入
+            target_x = WIDTH - 300
+            if boss.x > target_x:
+                boss.x -= 4  # 控制飞入速度（越小越慢）
 
-    # 5 秒后启用 Boss 攻击
-                if time_since_entry >= 5000 and boss.x <= target_x:
-                    boss_active = True
-                    boss_appearing = False
-                    boss_move_timer = pygame.time.get_ticks()
-                    boss_attack_timer = pygame.time.get_ticks()
-                    boss.x += (target_x - boss.x) * 0.1  # 越来越慢地接近
+# 5 秒后启用 Boss 攻击
+            if time_since_entry >= 5000 and boss.x <= target_x:
+                boss_active = True
+                boss_appearing = False
+                boss_move_timer = pygame.time.get_ticks()
+                boss_attack_timer = pygame.time.get_ticks()
+                boss.x += (target_x - boss.x) * 0.1  # 越来越慢地接近
 
 
 # 控制飞入速度
-            if boss_appearing:
-                boss.x += (boss_target_x - boss.x) * 0.05
-                boss.y += (boss_target_y - boss.y) * 0.05
+        if boss_appearing:
+            boss.x += (boss_target_x - boss.x) * 0.05
+            boss.y += (boss_target_y - boss.y) * 0.05
 
-                if abs(boss.x - boss_target_x) < 2 and abs(boss.y - boss_target_y) < 2:
-                    boss.x = boss_target_x
-                    boss.y = boss_target_y
-                    boss_appearing = False
-                    boss_active = True
-                    boss_move_timer = pygame.time.get_ticks()
-
-
+            if abs(boss.x - boss_target_x) < 2 and abs(boss.y - boss_target_y) < 2:
+                boss.x = boss_target_x
+                boss.y = boss_target_y
+                boss_appearing = False
+                boss_active = True
+                boss_move_timer = pygame.time.get_ticks()
 
 
-        #addboss
-                # === Boss Logic for Level 3 ===
-            if boss_active:
-                now = pygame.time.get_ticks()
 
-                # Move boss target every few seconds
-                if now - boss_move_timer > 2000:
-                    boss_target = pygame.Vector2(
-                        random.randint(600, WIDTH - 100),
-                        random.randint(20, HEIGHT // 2)
-                    )
-                    boss_move_timer = now
 
-                # Smooth boss movement
-                direction = boss_target - pygame.Vector2(boss.x, boss.y)
-                if direction.length() > 1:
-                    direction = direction.normalize() * 2
-                    boss.x += int(direction.x)
-                    boss.y += int(direction.y)
+    #addboss
+            # === Boss Logic for Level 3 ===
+        if boss_active:
+            now = pygame.time.get_ticks()
 
-                # Switch attack
-                if now - boss_attack_timer > next_attack_time:
-                    boss_attack_type = random.choice(["bullet_fan", "spiral"])
-                    boss_attack_timer = now
+            # Move boss target every few seconds
+            if now - boss_move_timer > 2000:
+                boss_target = pygame.Vector2(
+                    random.randint(600, WIDTH - 100),
+                    random.randint(20, HEIGHT // 2)
+                )
+                boss_move_timer = now
 
-                # Bullet fan (shoots left)
-                if boss_attack_type == "bullet_fan" and now % 1500 < 20:
-                    base_angle = math.pi
-                    for i in range(-3, 4):
-                        angle = base_angle + i * 0.2
-                        boss_bullets.append({
-                            "x": boss.centerx,
-                            "y": boss.centery,
-                            "vx": 8 * math.cos(angle),
-                            "vy": 8 * math.sin(angle)
-                        })
+            # Smooth boss movement
+            direction = boss_target - pygame.Vector2(boss.x, boss.y)
+            if direction.length() > 1:
+                direction = direction.normalize() * 2
+                boss.x += int(direction.x)
+                boss.y += int(direction.y)
 
-            # Spiral bullet
-                if boss_attack_type == "spiral" and now - boss_attack_timer > 200 and now % 100 < 10:
-                    last_fan_fire = now
-                    spiral_angle -= 0.2
+            # Switch attack
+            if now - boss_attack_timer > next_attack_time:
+                boss_attack_type = random.choice(["bullet_fan", "spiral"])
+                boss_attack_timer = now
+
+            # Bullet fan (shoots left)
+            if boss_attack_type == "bullet_fan" and now % 1500 < 20:
+                base_angle = math.pi
+                for i in range(-3, 4):
+                    angle = base_angle + i * 0.2
                     boss_bullets.append({
                         "x": boss.centerx,
                         "y": boss.centery,
-                        "vx": 7 * math.cos(spiral_angle),
-                        "vy": 7 * math.sin(spiral_angle)
+                        "vx": 8 * math.cos(angle),
+                        "vy": 8 * math.sin(angle)
                     })
 
-            # Move boss bullets
-                for b in boss_bullets:
-                    b["x"] += b["vx"]
-                    b["y"] += b["vy"]
-                boss_bullets = [b for b in boss_bullets if 0 <= b["x"] <= WIDTH and 0 <= b["y"] <= HEIGHT]
+        # Spiral bullet
+            if boss_attack_type == "spiral" and now - boss_attack_timer > 200 and now % 100 < 10:
+                last_fan_fire = now
+                spiral_angle -= 0.2
+                boss_bullets.append({
+                    "x": boss.centerx,
+                    "y": boss.centery,
+                    "vx": 7 * math.cos(spiral_angle),
+                    "vy": 7 * math.sin(spiral_angle)
+                })
 
-            # Check collision: Boss bullets → player
-                for b in boss_bullets:
-                    if dino.colliderect(pygame.Rect(b["x"], b["y"], 10, 10)):
-                        if now - last_damage_time > damage_cooldown:
-                            stamina -= 20
-                            last_damage_time = now
-                            hurt_sound.play()
-                        if stamina <= 0:
-                            game_over()
-                            
-           
-           
-            # Check collision: Your bullets → boss
-                for bullet in bullets_fired[:]:
-                    if boss.colliderect(bullet["rect"]):
-                        bullets_fired.remove(bullet)
-                        boss_health -= 1
-                        if boss_health <= 0:
-                            boss_active = False
-                            print("Boss defeated!")
+        # Move boss bullets
+            for b in boss_bullets:
+                b["x"] += b["vx"]
+                b["y"] += b["vy"]
+            boss_bullets = [b for b in boss_bullets if 0 <= b["x"] <= WIDTH and 0 <= b["y"] <= HEIGHT]
+
+        # Check collision: Boss bullets → player
+            for b in boss_bullets:
+                if dino.colliderect(pygame.Rect(b["x"], b["y"], 10, 10)):
+                    if now - last_damage_time > damage_cooldown:
+                        stamina -= 20
+                        last_damage_time = now
+                        hurt_sound.play()
+                    if stamina <= 0:
+                        game_over()
+                        
+        
+        
+        # Check collision: Your bullets → boss
+            for bullet in bullets_fired[:]:
+                if boss.colliderect(bullet["rect"]):
+                    bullets_fired.remove(bullet)
+                    boss_health -= 1
+                    if boss_health <= 0:
+                        boss_active = False
+                        print("Boss defeated!")
 
 
 
@@ -710,33 +710,32 @@ def run_game():
 
 
 
-
-            # Draw Dino
-            if dino_state == "run":
-                screen.blit(dino_run_imgs[dino_frame_index], (dino.x-10, dino.y-20))
-            elif dino_state == "jump":
-                screen.blit(dino_jump_imgs[dino_frame_index], (dino.x-10, dino.y-20))
-            elif dino_state == "shoot":
-                screen.blit(dino_shoot_imgs[dino_frame_index], (dino.x-10, dino.y-20))
+        # Draw Dino
+        if dino_state == "run":
+            screen.blit(dino_run_imgs[dino_frame_index], dino)
+        elif dino_state == "jump":
+            screen.blit(dino_jump_imgs[dino_frame_index], dino)
+        elif dino_state == "shoot":
+            screen.blit(dino_shoot_imgs[dino_frame_index], dino
 
             pygame.draw.rect(screen, (255, 0, 0), dino, 2)
 
-            # addboss
-            if boss_active:
-                pygame.draw.rect(screen, RED, boss)
-                pygame.draw.rect(screen, WHITE, (450, 20, 200, 20), 2)
-                pygame.draw.rect(screen, RED, (450, 20, boss_health * 66, 20))
-                hint = "!!!" if boss_attack_type == "bullet_fan" else "@@"
-                draw_text(hint, boss.centerx - 10, boss.y - 30)
+        # addboss
+        if boss_active:
+            pygame.draw.rect(screen, RED, boss)
+            pygame.draw.rect(screen, WHITE, (450, 20, 200, 20), 2)
+            pygame.draw.rect(screen, RED, (450, 20, boss_health * 66, 20))
+            hint = "!!!" if boss_attack_type == "bullet_fan" else "@@"
+            draw_text(hint, boss.centerx - 10, boss.y - 30)
 
 
 
 
 
 
-            # Draw Boss Bullets
-            for b in boss_bullets:
-                pygame.draw.circle(screen, RED, (int(b["x"]), int(b["y"])), 5)
+        # Draw Boss Bullets
+        for b in boss_bullets:
+            pygame.draw.circle(screen, RED, (int(b["x"]), int(b["y"])), 5)
 
 
 
@@ -750,68 +749,68 @@ def run_game():
 
 
 
-            # Draw enemies
-            for enemy in enemies:
-                if enemy["type"] == "tree":
-                    screen.blit(tree_img, (enemy["rect"].x - 10, enemy["rect"].y))  
-                elif enemy["type"] == "bird":
-                    screen.blit(bird_imgs[bird_frame_index], (enemy["rect"].x, enemy["rect"].y - 10))
-                elif enemy["type"] == "car1":
-                    screen.blit(car1_img, (enemy["rect"].x-10, enemy["rect"].y - 20))  
-                elif enemy["type"] == "car2":
-                    screen.blit(car2_img, (enemy["rect"].x-10, enemy["rect"].y - 20))
+        # Draw enemies
+        for enemy in enemies:
+            if enemy["type"] == "tree":
+                screen.blit(tree_img, (enemy["rect"].x - 10, enemy["rect"].y))  
+            elif enemy["type"] == "bird":
+                screen.blit(bird_imgs[bird_frame_index], (enemy["rect"].x, enemy["rect"].y - 10))
+            elif enemy["type"] == "car1":
+                screen.blit(car1_img, (enemy["rect"].x-10, enemy["rect"].y - 20))  
+            elif enemy["type"] == "car2":
+                screen.blit(car2_img, (enemy["rect"].x-10, enemy["rect"].y - 20))
 
-                    # 🛠 DEBUG: Draw enemy hitboxes
-                pygame.draw.rect(screen, (255, 0, 0), enemy["rect"], 2)
+                # 🛠 DEBUG: Draw enemy hitboxes
+            pygame.draw.rect(screen, (255, 0, 0), enemy["rect"], 2)
 
-            # DRAW TIMER HERE
-            draw_level_timer(elapsed, level)
+        # DRAW TIMER HERE
+        draw_level_timer(elapsed, level)
 
-            # Draw fruits and bullets
-            for food in foods:
-                screen.blit(food_img, food)
+        # Draw fruits and bullets
+        for food in foods:
+            screen.blit(food_img, food)
 
-            for bullet in bullets_fired:
-                screen.blit(bullet_img, (bullet["x"], bullet["y"]))
+        for bullet in bullets_fired:
+            screen.blit(bullet_img, (bullet["x"], bullet["y"]))
 
-            if boss_intro_active:
-                time_since_intro = pygame.time.get_ticks() - boss_intro_timer
-                if time_since_intro < 3000:  # 播放 3 秒
-                    if (time_since_intro // 500) % 2 == 0:  # 每 0.5 秒闪一下
-                        warning_text = big_font.render("WARNING!", True, (255, 0, 0))
-                        text_rect = warning_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-                        screen.blit(warning_text, text_rect)
-                else:
-                    boss_intro_active = False
-
-
+        if boss_intro_active:
+            time_since_intro = pygame.time.get_ticks() - boss_intro_timer
+            if time_since_intro < 3000:  # 播放 3 秒
+                if (time_since_intro // 500) % 2 == 0:  # 每 0.5 秒闪一下
+                    warning_text = big_font.render("WARNING!", True, (255, 0, 0))
+                    text_rect = warning_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                    screen.blit(warning_text, text_rect)
+            else:
+                boss_intro_active = False
 
 
 
 
-            # Draw UI
-            draw_text(f"Level: {level}", 20, 20)
 
-            # Code for stamina bar
-            bar_x, bar_y = 20, 50
-            bar_width, bar_height = 100, 20
-            bar_fill = int((stamina / 100) * bar_width)
 
-            pygame.draw.rect(screen, (255,255,255), (bar_x, bar_y, bar_width, bar_height))
-            pygame.draw.rect(screen, (255,0,0), (bar_x, bar_y, bar_fill, bar_height))
+        # Draw UI
+        draw_text(f"Level: {level}", 20, 20)
 
-            stamina_index = int((stamina / 100) * (len(stamina_bar_imgs) - 1))
-            stamina_index = 7 - min(7, stamina // 13)
+        # Code for stamina bar
+        bar_x, bar_y = 20, 50
+        bar_width, bar_height = 100, 20
+        bar_fill = int((stamina / 100) * bar_width)
 
-            stamina_img = stamina_bar_imgs[stamina_index]
+        pygame.draw.rect(screen, (255,255,255), (bar_x, bar_y, bar_width, bar_height))
+        pygame.draw.rect(screen, (255,0,0), (bar_x, bar_y, bar_fill, bar_height))
 
-            screen.blit(stamina_img, (bar_x + bar_width + 10, bar_y - 10))
+        stamina_index = int((stamina / 100) * (len(stamina_bar_imgs) - 1))
+        stamina_index = 7 - min(7, stamina // 13)
 
-            # Mana bullets display
-            for i in range(bullets):
-                screen.blit(mana_img, (bar_x + bar_width + 50 + i * 35, bar_y - 10))
+        stamina_img = stamina_bar_imgs[stamina_index]
 
-            pygame.display.flip()
+        screen.blit(stamina_img, (bar_x + bar_width + 10, bar_y - 10))
+
+        # Mana bullets display
+        for i in range(bullets):
+            screen.blit(mana_img, (bar_x + bar_width + 50 + i * 35, bar_y - 10))
+
+        pygame.display.flip()
 
 
 
