@@ -33,8 +33,6 @@ class Cutscene:
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
 
-
-
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -42,13 +40,19 @@ class Cutscene:
                     running = False
                     return  # Don't use sys.exit() here!
 
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    self.current_event_index += 1
-                    if self.current_event_index >= len(self.events):
-                        print("🟢 Cutscene ended")
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.current_event_index += 1
+                        if self.current_event_index >= len(self.events):
+                            print("🟢 Cutscene ended")
+                            pygame.mixer.music.fadeout(1000)
+                            running = False
+                            return  # Safely exit
+                    elif event.key == pygame.K_ESCAPE:  # Skip cutscene
+                        print("⏩ Cutscene skipped")
                         pygame.mixer.music.fadeout(1000)
                         running = False
-                        return  # Safely exit
+                        return  # Exit immediately
 
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.white_surface, (0, 0))
@@ -64,15 +68,11 @@ class Cutscene:
                     text_rect = text_surface.get_rect(topright=(self.screen.get_width() - 250, 200))  # top-right padding
                     self.screen.blit(text_surface, text_rect)
 
-
-
-            prompt = self.font.render("Press SPACE to continue", True, (0, 0, 0))
-            self.screen.blit(prompt, (self.screen.get_width() - 320, self.screen.get_height() - 50))
+            prompt = self.font.render("Press SPACE to continue or ESC to skip", True, (0, 0, 0))
+            self.screen.blit(prompt, (self.screen.get_width() - 400, self.screen.get_height() - 50))
 
             pygame.display.update()
             self.clock.tick(60)
-
-
 
 
 def tutorial(screen, bg, portraits):
@@ -383,6 +383,24 @@ def run_game():
 
         portraits = load_images('assets/portrait', count = 6, scale = (60, 60))
 
+        def pause_game():
+            paused = True
+            font = pygame.font.SysFont("Arial", 50)
+            pause_text = font.render("Game Paused. Press P to Resume.", True, (255, 255, 255))
+            text_rect = pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+            while paused:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                        paused = False
+
+                screen.fill((0, 0, 0))  # Optional: Dim the screen
+                screen.blit(pause_text, text_rect)
+                pygame.display.flip()
+                pygame.time.Clock().tick(30)  # Limit pause screen FPS
 
 
 
@@ -475,6 +493,8 @@ def run_game():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                    pause_game()
 
             keys = pygame.key.get_pressed()
             if keys[pygame.K_UP] and not is_jumping:
@@ -827,4 +847,3 @@ print("Tutorial finished, starting game...")
 # Then start the actual game
 
 run_game()
-
