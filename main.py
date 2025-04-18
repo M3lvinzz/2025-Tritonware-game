@@ -42,6 +42,12 @@ mana_img = pygame.image.load("assets/mana.png").convert_alpha()
 
 mana_img = pygame.transform.scale(mana_img, (40, 40))
 
+#bullet image load
+
+bullet_img = pygame.image.load("assets/bullet.png").convert_alpha()
+
+bullet_img = pygame.transform.scale(bullet_img, (40, 40))
+
 
 #bird images load
 bird_imgs = [
@@ -69,6 +75,11 @@ bg_img2 = pygame.transform.scale(pygame.image.load("assets/background2.png").con
 
 bg_x = 0
 
+# Load game over screen image
+game_over_img1 = pygame.transform.scale(pygame.image.load("assets/gameover1.png").convert(), (WIDTH, HEIGHT))
+game_over_img2 = pygame.transform.scale(pygame.image.load("assets/gameover2.png").convert(), (WIDTH, HEIGHT))
+game_over_img3 = pygame.transform.scale(pygame.image.load("assets/gameover3.png").convert(), (WIDTH, HEIGHT))
+game_over_img4 = pygame.transform.scale(pygame.image.load("assets/gameover4.png").convert(), (WIDTH, HEIGHT))
 
 
 
@@ -110,6 +121,7 @@ bullet_cooldown = False
 bullet_cooldown_time = 0
 last_damage_time = 0
 damage_cooldown = 1000
+first_time_no = True
 
 
 def draw_text(text, x, y):
@@ -174,12 +186,62 @@ def handle_collisions():
 
 
 def game_over():
-    screen.fill(BG_COLOR)
-    draw_text("Game Over!", 330, 120)
-    pygame.display.flip()
-    pygame.time.wait(2000)
-    pygame.quit()
-    sys.exit()
+    global first_time_no
+    choosing = True
+    state = 1
+    state3_start_time = None
+    while choosing:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if state == 1 and event.key == pygame.K_RIGHT:
+                    state = 2
+                elif state == 2:
+                    if event.key == pygame.K_RETURN:
+                        if first_time_no:
+                            state = 3
+                            state3_start_time = pygame.time.get_ticks()
+                            first_time_no = False
+                        else:
+                            pygame.quit()
+                            sys.exit()
+                    elif event.key == pygame.K_LEFT:
+                        state = 1
+                elif state == 1 and event.key == pygame.K_RETURN:
+                    reset_game()
+                    return
+                elif state == 4 and event.key == pygame.K_RETURN:
+                    reset_game()
+                    return
+        if state == 3 and state3_start_time:
+            elapsed = pygame.time.get_ticks() - state3_start_time
+            if elapsed >= 1500:
+                state = 4
+                state3_start_time = None
+
+        if state == 1:
+            screen.blit(game_over_img1, (0, 0))
+        elif state == 2:
+            screen.blit(game_over_img2, (0, 0))
+        elif state == 3:
+            screen.blit(game_over_img3, (0, 0))
+        elif state == 4:
+            screen.blit(game_over_img4, (0, 0))
+        pygame.display.flip()
+
+def reset_game():
+    global bullets, stamina, level, start_time, spawn_timer, bullet_cooldown, bullet_cooldown_time, last_damage_time
+    bullets = 3
+    stamina = 100
+    level = 1
+    start_time = pygame.time.get_ticks()
+    spawn_timer = 0
+    bullet_cooldown = False
+    bullet_cooldown_time = 0
+    last_damage_time = 0
 
 def win_game():
     screen.fill(BG_COLOR)
@@ -402,7 +464,7 @@ while running:
         screen.blit(food_img, food)
 
     for bullet in bullets_fired:
-        pygame.draw.rect(screen, BULLET_COLOR, bullet)
+        screen.blit(bullet_img, bullet)
 
     # Draw UI
     draw_text(f"Level: {level}", 20, 20)
@@ -412,7 +474,7 @@ while running:
     bar_width, bar_height = 100, 20
     bar_fill = int((stamina / 100) * bar_width)
 
-    pygame.draw.rect(screen, (255,255,255), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(screen, (255,0,0), (bar_x, bar_y, bar_width, bar_height))
     pygame.draw.rect(screen, (0,255,0), (bar_x, bar_y, bar_fill, bar_height))
 
     stamina_index = int((stamina / 100) * (len(stamina_bar_imgs) - 1))
