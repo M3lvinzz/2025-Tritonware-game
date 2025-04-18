@@ -2,7 +2,8 @@ import pygame
 from cutscenes import Cutscene, tutorial
 
 pygame.init()
-screen = pygame.display.set_mode((800, 600))
+WIDTH, HEIGHT = 1200, 500
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space to Advance Cutscene")
 
 def load_images(prefix, count, scale):
@@ -12,6 +13,8 @@ def load_images(prefix, count, scale):
     ]
 # Load assets
 bg = pygame.image.load("assets/background1.png")
-portraits = load_images('assets/portrait', count = 6, scale = (60, 60))
+portraits = load_images('assets/portrait', count = 6, scale = (500, 500))
 
-tutorial(screen, bg, portraits= portraits)
+running = True
+while running:
+    tutorial(screen, bg, portraits= portraits)

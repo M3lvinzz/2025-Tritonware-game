@@ -5,7 +5,7 @@ class Cutscene:
     def __init__(self, screen, background, events=None):
         self.screen = screen
         self.background = background
-        self.font = pygame.font.SysFont("Arial", 24)
+        self.font = pygame.font.Font(None, 48)
         self.events = events or []
         self.clock = pygame.time.Clock()
         self.finished = False
@@ -36,33 +36,98 @@ class Cutscene:
                 current = self.events[self.current_event_index]
 
                 if "portrait" in current and current["portrait"]:
-                    self.screen.blit(current["portrait"], (50, 300))
+                    portrait = pygame.transform.scale(current["portrait"], (500, 500))  # Enlarge portrait
+                    portrait_x = (self.screen.get_width() - portrait.get_width()) // 2
+                    portrait_y = -130
+                    self.screen.blit(portrait, (portrait_x, portrait_y))
 
                 if current.get("text"):
-                    text_surface = self.font.render(current["text"], True, (255, 255, 255))
-                    self.screen.blit(text_surface, current.get("pos", (100, 500)))
+                    lines = wrap_text(current["text"], self.font, 1000)
+                    for i, line in enumerate(lines):
+                        text_surface = self.font.render(line, True, (255, 255, 255))  # Use black for now
+                        text_x = (self.screen.get_width() - text_surface.get_width()) // 2
+                        text_y = 400 + i * 45
+                        self.screen.blit(text_surface, (text_x, text_y))
 
             pygame.display.update()
             self.clock.tick(60)
 
-def tutorial(screen, bg, portraits):
-    cutscene_events = [
-    {"text": "Hey, My name is Dante the Dinosaur!", "pos": (100, 500), 'portrait': portraits[0]},
-    {"text": "I am part Pentaceratops, Pterodactylus, and Tyrannosaurus Rex! What can I say? I am a triple threat!", "pos": (100, 500), 'portrait': portraits[1]},
-    {"text": "Humans sure have changed nature and the forest since us dinosaur’s time.", "pos": (100, 500), 'portrait': portraits[2]},
-    {"text": "I am not sure where home is anymore. Can you help me find home?", "pos": (100, 500), 'portrait': portraits[3]},
-    {"text": "While I am running, press [Arrow up] to Jump!", "pos": (100, 500), 'portrait': portraits[4]},
-    {"text": "I can't keep running forever, look at my Stamina bar!", "pos": (100, 500), 'portrait': portraits[5]},
-    {"text": "Make sure to pick up the meat on the ground to replenish my stamina", "pos": (100, 500), 'portrait': portraits[0]},
-    {"text": "I don't want to burn down the forest, but I allow myself to fire 3 fireballs to break any obstacle in my way!", "pos": (100, 500), 'portrait': portraits[1]},
-    {"text": "Press [Right Arrow] to shoot a fireball. Be careful, I only get 3!", "pos": (100, 500), 'portrait': portraits[2]},
-    {"text": "EX", "pos": (100, 500)},
-    ]
+def wrap_text(text, font, max_width):
+    words = text.split(' ')
+    lines = []
+    current_line = ''
+    for word in words:
+        test_line = current_line + word + ' '
+        if font.size(test_line)[0] <= max_width:
+            current_line = test_line
+        else:
+            lines.append(current_line.strip())
+            current_line = word + ' '
+    if current_line:
+        lines.append(current_line.strip())
+    return lines
 
+def tutorial(screen, bg, portraits):    
+    cutscene_events = [
+        {"text": "Hey, My name is Dante the Dinosaur!", 'portrait': portraits[3]},
+        {"text": "I am part Pentaceratops, Pterodactylus, and Tyrannosaurus Rex! What can I say? I am a triple threat!", 'portrait': portraits[0]},
+        {"text": "Humans sure have changed nature and the forest since us dinosaur’s time.", 'portrait': portraits[2]},
+        {"text": "I am not sure where home is anymore. Can you help me find home?", 'portrait': portraits[2]},
+        {"text": "While I am running, press [Arrow up] to Jump!", 'portrait': portraits[3]},
+        {"text": "I can't keep running forever, look at my Stamina bar!", 'portrait': portraits[5]},
+        {"text": "Make sure to pick up the meat on the ground to replenish my stamina", 'portrait': portraits[0]},
+        {"text": "I don't want to burn down the forest, but I allow myself to fire 3 fireballs to break any obstacle in my way!", 'portrait': portraits[4]},
+        {"text": "Press [Right Arrow] to shoot a fireball. Be careful, I only get 3!", 'portrait': portraits[5]},
+        {"text": "After every stage, you get to choose to replenish my fire", 'portrait': portraits[2]},
+        {"text": "or increase my stamina!", 'portrait': portraits[4]},
+        {"text": "To get home, I need to go through the forest, a town, and finally a factory", 'portrait': portraits[2]},
+    ]
     cutscene = Cutscene(
         screen,
         bg, 
         cutscene_events,
-        )
+    )
     cutscene.play()
 
+def level1(screen, bg, portraits):
+    cutscene_events = [
+        {"text": "Wow, there were a lot of trees and birds in the way!", 'portrait': portraits[3]},
+        {"text": "Lets try and get through the town as fast as possible", 'portrait': portraits[4]},
+        {"text": "I have a bad feeling about the cars coming towards us", 'portrait': portraits[2]},
+    ]
+    cutscene = Cutscene(
+        screen,
+        bg, 
+        cutscene_events,
+    )
+    cutscene.play()
+
+def level2(screen, bg, portraits):
+    cutscene_events = [
+        {"text": "Man, the urbanization of this world is getting out of hand", 'portrait': portraits[2]},
+        {"text": "It feels like I just ran through the suburbs for days", 'portrait': portraits[5]},
+        {"text": "I think this part is the worst", 'portrait': portraits[5]},
+        {"text": "The smoke and oil everywhere is suffocating ", 'portrait': portraits[2]},
+        {"text": "Oops, I think I also attracted the attention of the factory owner", 'portrait': portraits[5]},
+        {"text": "To defeat him, just have to hit 2 fireballs!", 'portrait': portraits[4]},
+    ]
+    cutscene = Cutscene(
+        screen,
+        bg, 
+        cutscene_events,
+    )
+    cutscene.play()
+
+def ending(screen, bg, portraits):
+    cutscene_events = [
+        {"text": "Well, that was a great adventure", 'portrait': portraits[3]},
+        {"text": "Even though we explored a lot bad places like the factory", 'portrait': portraits[2]},
+        {"text": "I had fun, and I hope you had fun helping me back home", 'portrait': portraits[4]},
+        {"text": "See you next time and thank you for playing!", 'portrait': portraits[0]},
+    ]
+    cutscene = Cutscene(
+        screen,
+        bg, 
+        cutscene_events,
+    )
+    cutscene.play()

@@ -2,6 +2,7 @@ import pygame
 import random
 import sys
 from dino import Player
+from cutscene_test import *
 
 # Initialize Pygame
 pygame.init()
@@ -169,6 +170,8 @@ while running:
     dt = clock.tick(60)
     elapsed = pygame.time.get_ticks() - start_time
     screen.fill(BG_COLOR)
+
+    tutorial(screen, current_bg, portraits)
 
     game_speed = 5 + level + (elapsed / 15000)
     bg_x -= int(game_speed * 0.5)

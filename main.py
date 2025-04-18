@@ -1,6 +1,7 @@
 import pygame
 import random
 import sys
+from cutscenes import *
 
 # Initialize Pygame
 pygame.init()
@@ -247,6 +248,7 @@ while running:
     screen.fill(BG_COLOR)
 
     game_speed = 5 + level + (elapsed / 15000)
+
 # Move and draw scrolling background
     bg_x -= int(game_speed * 0.5)  # Adjust speed for parallax effect
     if bg_x <= -WIDTH:
