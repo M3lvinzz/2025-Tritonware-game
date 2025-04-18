@@ -3,6 +3,7 @@ import random
 import sys
 #addboss
 import math
+from cutscenes import *
 
 # Initialize Pygame
 pygame.init()
@@ -420,6 +421,12 @@ def run_game():
             bg_x -= int(game_speed * 0.5)  # Adjust speed for parallax effect
             if bg_x <= -WIDTH:
                 bg_x = 0
+    game_speed = 5 + level + (elapsed / 15000)
+
+# Move and draw scrolling background
+    bg_x -= int(game_speed * 0.5)  # Adjust speed for parallax effect
+    if bg_x <= -WIDTH:
+        bg_x = 0
 
         # Draw background images side-by-side for looping
             current_bg = bg_img1 if level != 2 else bg_img2
