@@ -3,7 +3,6 @@ import random
 import sys
 #addboss
 import math
-from cutscenes import *
 
 # Initialize Pygame
 pygame.init()
@@ -93,15 +92,6 @@ def tutorial(screen, bg, portraits):
     cutscene = Cutscene(screen, bg, cutscene_events)
     cutscene.play()
     print("✅ Cutscene finished!") 
-
-
-
-
-
-
-
-
-
 
 def run_game():
     clock = pygame.time.Clock()
@@ -421,12 +411,6 @@ def run_game():
             bg_x -= int(game_speed * 0.5)  # Adjust speed for parallax effect
             if bg_x <= -WIDTH:
                 bg_x = 0
-    game_speed = 5 + level + (elapsed / 15000)
-
-# Move and draw scrolling background
-    bg_x -= int(game_speed * 0.5)  # Adjust speed for parallax effect
-    if bg_x <= -WIDTH:
-        bg_x = 0
 
     # Draw background images side-by-side for looping
         current_bg = bg_img1 if level != 2 else bg_img2
@@ -726,15 +710,15 @@ def run_game():
 
 
 
-
         # Draw Dino
         if dino_state == "run":
             screen.blit(dino_run_imgs[dino_frame_index], dino)
         elif dino_state == "jump":
             screen.blit(dino_jump_imgs[dino_frame_index], dino)
         elif dino_state == "shoot":
-            screen.blit(dino_shoot_imgs[dino_frame_index], dino)
+            screen.blit(dino_shoot_imgs[dino_frame_index], dino
 
+            pygame.draw.rect(screen, (255, 0, 0), dino, 2)
 
         # addboss
         if boss_active:
