@@ -8,8 +8,8 @@ class Player:
         self.jump_imgs = jump_imgs
         self.shoot_imgs = shoot_imgs
 
-        self.gravity = 1.2
-        self.jump_velocity = -20
+        self.gravity = 1.0
+        self.jump_velocity = -22
         self.velocity_y = 0
         self.is_jumping = False
         self.jump_key_held = False  # Track jump key hold
@@ -36,7 +36,7 @@ class Player:
         if keys[pygame.K_RIGHT] and bullets > 0 and not bullet_cooldown:
             self.action = "shoot"
             self.frame_index = 0
-            new_bullet = pygame.Rect(self.rect.right, self.rect.centery - 5, 10, 5)
+            new_bullet = pygame.Rect(self.rect.right, self.rect.centery - 20, 40, 40)
 
         return new_bullet
 
@@ -84,12 +84,17 @@ class Player:
                     self.is_shooting = False
 
     def draw(self, screen):
+        current_img = None
         if self.state == "run":
-            screen.blit(self.run_imgs[self.frame_index], self.rect)
+            current_img = self.run_imgs[self.frame_index]
         elif self.state == "jump":
-            screen.blit(self.jump_imgs[self.frame_index], self.rect)
+            current_img = self.jump_imgs[self.frame_index]
         elif self.state == "shoot":
-            screen.blit(self.shoot_imgs[self.frame_index], self.rect)
-        elif hasattr(self, 'action') and self.action == "shoot":
-            index = self.frame_index % len(self.shoot_imgs)
-            screen.blit(self.shoot_imgs[index], self.rect)
+            current_img = self.shoot_imgs[self.frame_index]
+
+        if current_img:
+            img_rect = current_img.get_rect(center=self.rect.center)
+            screen.blit(current_img, img_rect)
+
+        # ✅ Draw hitbox for debug
+        pygame.draw.rect(screen, (0, 255, 255), self.rect, 2)

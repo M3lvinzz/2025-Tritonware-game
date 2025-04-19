@@ -19,18 +19,21 @@ class Cutscene:
         running = True
 
         while running:
-            self.screen.blit(self.background, (0, 0))
-            self.screen.blit(self.white_surface, (0, 0))
+            self.screen.blit(self.background, (0, 0))  # Draw full background image
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    self.current_event_index += 1
-                    if self.current_event_index >= len(self.events):
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
                         running = False
                         self.finished = True
+                    elif event.key == pygame.K_SPACE:
+                        self.current_event_index += 1
+                        if self.current_event_index >= len(self.events):
+                            running = False
+                            self.finished = True
 
             if self.current_event_index < len(self.events):
                 current = self.events[self.current_event_index]
@@ -44,11 +47,15 @@ class Cutscene:
                 if current.get("text"):
                     lines = wrap_text(current["text"], self.font, 1000)
                     for i, line in enumerate(lines):
-                        text_surface = self.font.render(line, True, (255, 255, 255))  # Use black for now
+                        text_surface = self.font.render(line, True, (255, 255, 255))
                         text_x = (self.screen.get_width() - text_surface.get_width()) // 2
                         text_y = 400 + i * 45
                         self.screen.blit(text_surface, (text_x, text_y))
 
+            small_font = pygame.font.Font(None, 24)
+            prompt_text = small_font.render("Press [ESC] to skip or [SPACE] to continue", True, (255, 255, 255))
+            prompt_rect = prompt_text.get_rect(topright=(self.screen.get_width() - 20, 20))
+            self.screen.blit(prompt_text, prompt_rect)
             pygame.display.update()
             self.clock.tick(60)
 
@@ -118,6 +125,15 @@ def level2(screen, bg, portraits):
     )
     cutscene.play()
 
+def level_up_cutscene(screen, bg, portraits):
+    cutscene_events = [
+        {"text": "Level up!", "portrait": portraits[1]},
+        {"text": "[B] to replenish fireballs", "portrait": portraits[1]},
+        {"text": "[S] to increase stamina", "portrait": portraits[1]},
+    ]
+    cutscene = Cutscene(screen, bg, cutscene_events)
+    cutscene.play()
+
 def ending(screen, bg, portraits):
     cutscene_events = [
         {"text": "Well, that was a great adventure", 'portrait': portraits[3]},
@@ -150,3 +166,5 @@ def ending(screen, bg, portraits):
 
         # Play the cutscene
         tutorial(screen, bg, portraits)
+
+
